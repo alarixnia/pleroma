@@ -137,7 +137,7 @@ defmodule Pleroma.Formatter do
                       end)
                     )
 
-  @emoji ++ @emoji_from_globs ++ @emoji_from_file
+  @emoji @emoji_from_file
 
   def emojify(text, emoji \\ @emoji)
   def emojify(text, nil), do: text
