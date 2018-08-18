@@ -1,6 +1,6 @@
 {
   "theme": "csi",
-  "background": "/static/blur.jpg",
+  "background": "/static/herbage_purple.jpg",
   "logo": "/static/csi.png",
   "redirectRootNoLogin": "/main/all",
   "redirectRootLogin": "/main/friends",
