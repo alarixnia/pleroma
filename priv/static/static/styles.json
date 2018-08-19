@@ -1,5 +1,6 @@
 {
   "csi": [ "Catgirl Science", "#111111", "#212121", "#eeeeee", "#b99ed9", "#f92672", "#17bf63", "#0095ff", "#ffa500" ],
+  "csi-light": [ "Catgirl Light", "#f8fafd", "#e6ecf0", "#141414", "#572f87", "#f92672", "#17bf63", "#0095ff", "#ffa500" ],
   "pleroma-dark": [ "Pleroma Dark", "#121a24", "#182230", "#b9b9ba", "#d8a070", "#d31014", "#0fa00f", "#0095ff", "#ffa500" ],
   "pleroma-light": [ "Pleroma Light", "#f2f4f6", "#dbe0e8", "#304055", "#f86f0f", "#d31014", "#0fa00f", "#0095ff", "#ffa500" ],
   "classic-dark": [ "Classic Dark", "#161c20", "#282e32", "#b9b9b9", "#baaa9c", "#d31014", "#0fa00f", "#0095ff", "#ffa500" ],
