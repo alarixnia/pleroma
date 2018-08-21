@@ -413,8 +413,8 @@ defmodule Pleroma.Web.TwitterAPI.Controller do
   def update_profile(%{assigns: %{user: user}} = conn, params) do
     params =
       if bio = params["description"] do
-        mentions = Formatter.parse_mentions(user.bio)
-        tags = Formatter.parse_tags(user.bio)
+        mentions = Formatter.parse_mentions(bio)
+        tags = Formatter.parse_tags(bio)
         emoji =
           (user.info["source_data"]["tag"] || [])
           |> Enum.filter(fn %{"type" => t} -> t == "Emoji" end)
