@@ -47,7 +47,7 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
       "statusnet_blocking" => statusnet_blocking,
       "friends_count" => user_info[:following_count],
       "id" => user.id,
-      "name" => user.name,
+      "name" => user.name |> String.replace("<br>", "\n"),
       "name_html" => HtmlSanitizeEx.strip_tags(user.name) |> Formatter.emojify(emoji),
       "profile_image_url" => image,
       "profile_image_url_https" => image,
