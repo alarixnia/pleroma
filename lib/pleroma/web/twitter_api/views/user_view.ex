@@ -4,6 +4,7 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
   alias Pleroma.Formatter
   alias Pleroma.Web.CommonAPI.Utils
   alias Pleroma.Web.MediaProxy
+  alias HtmlSanitizeEx.Scrubber
 
   def render("show.json", %{user: user = %User{}} = assigns) do
     render_one(user, Pleroma.Web.TwitterAPI.UserView, "user.json", assigns)
@@ -36,12 +37,10 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
         {String.trim(name, ":"), url}
       end)
 
-    bio = HtmlSanitizeEx.strip_tags(user.bio)
-
     data = %{
       "created_at" => user.inserted_at |> Utils.format_naive_asctime(),
-      "description" => bio,
-      "description_html" => bio |> Formatter.emojify(emoji),
+      "description" => HtmlSanitizeEx.strip_tags(user.bio),
+      "description_html" => sanitize_bio(user.bio) |> Formatter.emojify(emoji),
       "favourites_count" => 0,
       "followers_count" => user_info[:follower_count],
       "following" => following,
@@ -90,6 +89,10 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
       "profile_url" => ap_id,
       "screen_name" => nickname
     }
+  end
+
+  def sanitize_bio(bio) do
+    bio |> Scrubber.scrub(BioHtml)
   end
 
   defp image_url(%{"url" => [%{"href" => href} | _]}), do: href

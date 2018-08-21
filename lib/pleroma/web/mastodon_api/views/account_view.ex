@@ -4,6 +4,7 @@ defmodule Pleroma.Web.MastodonAPI.AccountView do
   alias Pleroma.Web.MastodonAPI.AccountView
   alias Pleroma.Web.CommonAPI.Utils
   alias Pleroma.Web.MediaProxy
+  alias HtmlSanitizeEx.Scrubber
 
   def render("accounts.json", %{users: users} = opts) do
     render_many(users, AccountView, "account.json", opts)
@@ -36,7 +37,7 @@ defmodule Pleroma.Web.MastodonAPI.AccountView do
       followers_count: user_info.follower_count,
       following_count: user_info.following_count,
       statuses_count: user_info.note_count,
-      note: user.bio || "",
+      note: sanitize_bio(user.bio) || "",
       url: user.ap_id,
       avatar: image,
       avatar_static: image,
@@ -75,5 +76,9 @@ defmodule Pleroma.Web.MastodonAPI.AccountView do
 
   def render("relationships.json", %{user: user, targets: targets}) do
     render_many(targets, AccountView, "relationship.json", user: user, as: :target)
+  end
+
+  def sanitize_bio(bio) do
+    bio |> Scrubber.scrub(BioHtml)
   end
 end
