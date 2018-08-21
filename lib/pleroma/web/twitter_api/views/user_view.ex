@@ -28,6 +28,13 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
 
     user_info = User.get_cached_user_info(user)
 
+    emoji =
+      (user.info["source_data"]["tag"] || [])
+      |> Enum.filter(fn %{"type" => t} -> t == "Emoji" end)
+      |> Enum.map(fn %{"icon" => %{"url" => url}, "name" => name} ->
+        {String.trim(name, ":"), url}
+      end)
+
     data = %{
       "created_at" => user.inserted_at |> Utils.format_naive_asctime(),
       "description" => HtmlSanitizeEx.strip_tags(user.bio |> String.replace("<br>", "\n")),
@@ -40,7 +47,7 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
       "friends_count" => user_info[:following_count],
       "id" => user.id,
       "name" => user.name,
-      "name_html" => HtmlSanitizeEx.strip_tags(user.name),
+      "name_html" => HtmlSanitizeEx.strip_tags(user.name) |> Formatter.emojify(emoji),
       "profile_image_url" => image,
       "profile_image_url_https" => image,
       "profile_image_url_profile_size" => image,
