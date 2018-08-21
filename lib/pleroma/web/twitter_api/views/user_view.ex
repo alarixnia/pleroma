@@ -1,6 +1,7 @@
 defmodule Pleroma.Web.TwitterAPI.UserView do
   use Pleroma.Web, :view
   alias Pleroma.User
+  alias Pleroma.Formatter
   alias Pleroma.Web.CommonAPI.Utils
   alias Pleroma.Web.MediaProxy
 
