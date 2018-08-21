@@ -3,6 +3,7 @@ defmodule Pleroma.Web.TwitterAPI.Controller do
   alias Pleroma.Formatter
   alias Pleroma.Web.TwitterAPI.{TwitterAPI, UserView, ActivityView, NotificationView}
   alias Pleroma.Web.CommonAPI
+  alias Pleroma.Web.CommonAPI.Utils, as: CommonUtils
   alias Pleroma.{Repo, Activity, User, Notification}
   alias Pleroma.Web.ActivityPub.ActivityPub
   alias Pleroma.Web.ActivityPub.Utils
@@ -420,11 +421,8 @@ defmodule Pleroma.Web.TwitterAPI.Controller do
           |> Enum.map(fn %{"icon" => %{"url" => url}, "name" => name} ->
             {String.trim(name, ":"), url}
           end)
-        bio_html = Regex.replace(~r/\r?\n/, bio, "<br>")
+        bio_html = CommonUtils.format_input(bio, mentions, tags)
         |> Formatter.emojify(emoji)
-        |> Formatter.add_links()
-        |> Formatter.add_user_links(mentions)
-        |> Formatter.add_hashtag_links(tags)
         Map.put(params, "bio", bio_html)
       else
         params
