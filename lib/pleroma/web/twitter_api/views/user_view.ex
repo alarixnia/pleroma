@@ -36,10 +36,17 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
         {String.trim(name, ":"), url}
       end)
 
+    bio_mentions = Formatter.parse_mentions(user.bio)
+    bio_tags = Formatter.parse_tags(user.bio)
+
+    bio_html = user.bio
+    |> Formatter.emojify(emoji)
+    |> Utils.format_input(bio_mentions, bio_tags)
+
     data = %{
       "created_at" => user.inserted_at |> Utils.format_naive_asctime(),
       "description" => HtmlSanitizeEx.strip_tags(user.bio |> String.replace("<br>", "\n")),
-      "description_html" => HtmlSanitizeEx.basic_html(user.bio) |> Formatter.emojify(emoji),
+      "description_html" => bio_html,
       "favourites_count" => 0,
       "followers_count" => user_info[:follower_count],
       "following" => following,
