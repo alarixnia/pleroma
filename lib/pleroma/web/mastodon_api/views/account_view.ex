@@ -4,7 +4,6 @@ defmodule Pleroma.Web.MastodonAPI.AccountView do
   alias Pleroma.Web.MastodonAPI.AccountView
   alias Pleroma.Web.CommonAPI.Utils
   alias Pleroma.Web.MediaProxy
-  alias HtmlSanitizeEx.Scrubber
 
   def render("accounts.json", %{users: users} = opts) do
     render_many(users, AccountView, "account.json", opts)

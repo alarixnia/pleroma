@@ -4,7 +4,6 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
   alias Pleroma.Formatter
   alias Pleroma.Web.CommonAPI.Utils
   alias Pleroma.Web.MediaProxy
-  alias HtmlSanitizeEx.Scrubber
 
   def render("show.json", %{user: user = %User{}} = assigns) do
     render_one(user, Pleroma.Web.TwitterAPI.UserView, "user.json", assigns)
