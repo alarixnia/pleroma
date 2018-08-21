@@ -1,5 +1,6 @@
 defmodule Pleroma.Web.TwitterAPI.Controller do
   use Pleroma.Web, :controller
+  alias Pleroma.Formatter
   alias Pleroma.Web.TwitterAPI.{TwitterAPI, UserView, ActivityView, NotificationView}
   alias Pleroma.Web.CommonAPI
   alias Pleroma.{Repo, Activity, User, Notification}
@@ -411,8 +412,20 @@ defmodule Pleroma.Web.TwitterAPI.Controller do
   def update_profile(%{assigns: %{user: user}} = conn, params) do
     params =
       if bio = params["description"] do
-        bio_brs = Regex.replace(~r/\r?\n/, bio, "<br>")
-        Map.put(params, "bio", bio_brs)
+        mentions = Formatter.parse_mentions(user.bio)
+        tags = Formatter.parse_tags(user.bio)
+        emoji =
+          (user.info["source_data"]["tag"] || [])
+          |> Enum.filter(fn %{"type" => t} -> t == "Emoji" end)
+          |> Enum.map(fn %{"icon" => %{"url" => url}, "name" => name} ->
+            {String.trim(name, ":"), url}
+          end)
+        bio_html = Regex.replace(~r/\r?\n/, bio, "<br>")
+        |> Formatter.emojify(emoji)
+        |> Formatter.add_links()
+        |> Formatter.add_user_links(mentions)
+        |> Formatter.add_hashtag_links(tags)
+        Map.put(params, "bio", bio_html)
       else
         params
       end

@@ -1,7 +1,6 @@
 defmodule Pleroma.Web.TwitterAPI.UserView do
   use Pleroma.Web, :view
   alias Pleroma.User
-  alias Pleroma.Formatter
   alias Pleroma.Web.CommonAPI.Utils
   alias Pleroma.Web.MediaProxy
 
@@ -29,24 +28,10 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
 
     user_info = User.get_cached_user_info(user)
 
-    emoji =
-      (user.info["source_data"]["tag"] || [])
-      |> Enum.filter(fn %{"type" => t} -> t == "Emoji" end)
-      |> Enum.map(fn %{"icon" => %{"url" => url}, "name" => name} ->
-        {String.trim(name, ":"), url}
-      end)
-
-    bio_mentions = Formatter.parse_mentions(user.bio)
-    bio_tags = Formatter.parse_tags(user.bio)
-
-    bio_html = user.bio
-    |> Formatter.emojify(emoji)
-    |> Utils.format_input(bio_mentions, bio_tags)
-
     data = %{
       "created_at" => user.inserted_at |> Utils.format_naive_asctime(),
       "description" => HtmlSanitizeEx.strip_tags(user.bio |> String.replace("<br>", "\n")),
-      "description_html" => bio_html,
+      "description_html" => HtmlSanitizeEx.basic_html(user.bio),
       "favourites_count" => 0,
       "followers_count" => user_info[:follower_count],
       "following" => following,
@@ -55,7 +40,7 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
       "friends_count" => user_info[:following_count],
       "id" => user.id,
       "name" => user.name,
-      "name_html" => HtmlSanitizeEx.strip_tags(user.name) |> Formatter.emojify(emoji),
+      "name_html" => HtmlSanitizeEx.strip_tags(user.name),
       "profile_image_url" => image,
       "profile_image_url_https" => image,
       "profile_image_url_profile_size" => image,
