@@ -12,8 +12,33 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
 
   @instance Application.get_env(:pleroma, :instance)
 
-  def get_recipients(data) do
-    (data["to"] || []) ++ (data["cc"] || [])
+  # For Announce activities, we filter the recipients based on following status for any actors
+  # that match actual users.  See issue #164 for more information about why this is necessary.
+  defp get_recipients(%{"type" => "Announce"} = data) do
+    to = data["to"] || []
+    cc = data["cc"] || []
+    recipients = to ++ cc
+    actor = User.get_cached_by_ap_id(data["actor"])
+
+    recipients
+    |> Enum.filter(fn recipient ->
+      case User.get_cached_by_ap_id(recipient) do
+        nil ->
+          true
+
+        user ->
+          User.following?(user, actor)
+      end
+    end)
+
+    {recipients, to, cc}
+  end
+
+  defp get_recipients(data) do
+    to = data["to"] || []
+    cc = data["cc"] || []
+    recipients = to ++ cc
+    {recipients, to, cc}
   end
 
   defp check_actor_is_active(actor) do
@@ -35,12 +60,16 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
          :ok <- check_actor_is_active(map["actor"]),
          {:ok, map} <- MRF.filter(map),
          :ok <- insert_full_object(map) do
+      {recipients, recipients_to, recipients_cc} = get_recipients(map)
+
       {:ok, activity} =
         Repo.insert(%Activity{
           data: map,
           local: local,
           actor: map["actor"],
-          recipients: get_recipients(map)
+          recipients: recipients,
+          recipients_to: recipients_to,
+          recipients_cc: recipients_cc
         })
 
       Notification.create_notifications(activity)
@@ -381,6 +410,20 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
 
   defp restrict_tag(query, _), do: query
 
+  defp restrict_to_cc(query, recipients_to, recipients_cc) do
+    from(
+      activity in query,
+      where:
+        fragment(
+          "(? && ?) or (? && ?)",
+          ^recipients_to,
+          activity.recipients_to,
+          ^recipients_cc,
+          activity.recipients_cc
+        )
+    )
+  end
+
   defp restrict_recipients(query, [], _user), do: query
 
   defp restrict_recipients(query, recipients, nil) do
@@ -522,6 +565,13 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
     |> Enum.reverse()
   end
 
+  def fetch_activities_bounded(recipients_to, recipients_cc, opts \\ %{}) do
+    fetch_activities_query([], opts)
+    |> restrict_to_cc(recipients_to, recipients_cc)
+    |> Repo.all()
+    |> Enum.reverse()
+  end
+
   def upload(file) do
     data = Upload.store(file, Application.get_env(:pleroma, :instance)[:dedupe_media])
     Repo.insert(%Object{data: data})
@@ -554,11 +604,22 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
         "locked" => locked
       },
       avatar: avatar,
-      nickname: "#{data["preferredUsername"]}@#{URI.parse(data["id"]).host}",
       name: data["name"],
       follower_address: data["followers"],
       bio: data["summary"]
     }
+
+    # nickname can be nil because of virtual actors
+    user_data =
+      if data["preferredUsername"] do
+        Map.put(
+          user_data,
+          :nickname,
+          "#{data["preferredUsername"]}@#{URI.parse(data["id"]).host}"
+        )
+      else
+        Map.put(user_data, :nickname, nil)
+      end
 
     {:ok, user_data}
   end

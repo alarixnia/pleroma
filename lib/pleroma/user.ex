@@ -77,7 +77,7 @@ defmodule Pleroma.User do
     changes =
       %User{}
       |> cast(params, [:bio, :name, :ap_id, :nickname, :info, :avatar])
-      |> validate_required([:name, :ap_id, :nickname])
+      |> validate_required([:name, :ap_id])
       |> unique_constraint(:nickname)
       |> validate_format(:nickname, @email_regex)
       |> validate_length(:bio, max: 5000)
@@ -457,13 +457,34 @@ defmodule Pleroma.User do
     update_and_set_cache(cs)
   end
 
+  def get_notified_from_activity_query(to) do
+    from(
+      u in User,
+      where: u.ap_id in ^to,
+      where: u.local == true
+    )
+  end
+
+  def get_notified_from_activity(%Activity{recipients: to, data: %{"type" => "Announce"} = data}) do
+    object = Object.normalize(data["object"])
+    actor = User.get_cached_by_ap_id(data["actor"])
+
+    # ensure that the actor who published the announced object appears only once
+    to =
+      if actor.nickname != nil do
+        to ++ [object.data["actor"]]
+      else
+        to
+      end
+      |> Enum.uniq()
+
+    query = get_notified_from_activity_query(to)
+
+    Repo.all(query)
+  end
+
   def get_notified_from_activity(%Activity{recipients: to}) do
-    query =
-      from(
-        u in User,
-        where: u.ap_id in ^to,
-        where: u.local == true
-      )
+    query = get_notified_from_activity_query(to)
 
     Repo.all(query)
   end
@@ -500,7 +521,8 @@ defmodule Pleroma.User do
               u.nickname,
               u.name
             )
-        }
+        },
+        where: not is_nil(u.nickname)
       )
 
     q =
@@ -579,7 +601,11 @@ defmodule Pleroma.User do
   end
 
   def local_user_query() do
-    from(u in User, where: u.local == true)
+    from(
+      u in User,
+      where: u.local == true,
+      where: not is_nil(u.nickname)
+    )
   end
 
   def deactivate(%User{} = user) do
@@ -635,6 +661,25 @@ defmodule Pleroma.User do
             _ -> {:error, "Could not fetch by AP id"}
           end
       end
+    end
+  end
+
+  def get_or_create_instance_user do
+    relay_uri = "#{Pleroma.Web.Endpoint.url()}/relay"
+
+    if user = get_by_ap_id(relay_uri) do
+      user
+    else
+      changes =
+        %User{}
+        |> cast(%{}, [:ap_id, :nickname, :local])
+        |> put_change(:ap_id, relay_uri)
+        |> put_change(:nickname, nil)
+        |> put_change(:local, true)
+        |> put_change(:follower_address, relay_uri <> "/followers")
+
+      {:ok, user} = Repo.insert(changes)
+      user
     end
   end
 
