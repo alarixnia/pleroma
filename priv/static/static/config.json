@@ -2,7 +2,7 @@
   "theme": "csi",
   "background": "/static/herbage_purple.jpg",
   "logo": "/static/csi.png",
-  "logoMask": true,
+  "logoMask": false,
   "logoMargin": ".1em",
   "redirectRootNoLogin": "/main/all",
   "redirectRootLogin": "/main/friends",
