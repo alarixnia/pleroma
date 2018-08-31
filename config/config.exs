@@ -11,10 +11,14 @@ config :pleroma, ecto_repos: [Pleroma.Repo]
 config :pleroma, Pleroma.Repo, types: Pleroma.PostgresTypes
 
 config :pleroma, Pleroma.Upload,
-  uploads: "uploads",
-  strip_exif: false,
-  use_s3: false,
-  s3_bucket: nil
+  uploader: Pleroma.Uploaders.Local,
+  strip_exif: false
+
+config :pleroma, Pleroma.Uploaders.Local, uploads: "uploads"
+
+config :pleroma, Pleroma.Uploaders.S3,
+  bucket: nil,
+  public_endpoint: "https://s3.amazonaws.com"
 
 config :pleroma, :emoji, shortcode_globs: ["/emoji/custom/**/*.png"]
 
@@ -71,6 +75,8 @@ config :pleroma, :instance,
 config :pleroma, :fe,
   theme: "pleroma-dark",
   logo: "/static/logo.png",
+  logo_mask: true,
+  logo_margin: "0.1em",
   background: "/static/aurora_borealis.jpg",
   redirect_root_no_login: "/main/all",
   redirect_root_login: "/main/friends",
