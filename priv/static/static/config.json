@@ -9,5 +9,6 @@
   "chatDisabled": true,
   "showInstanceSpecificPanel": true,
   "scopeOptionsEnabled": true,
+  "formattingOptionsEnabled": false,
   "collapseMessageWithSubject": true
 }
