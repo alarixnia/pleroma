@@ -2,7 +2,7 @@
   "theme": "csi",
   "background": "/static/herbage_purple.jpg",
   "logo": "/static/csi.png",
-  "logoMask": false,
+  "logoMask": true,
   "logoMargin": ".1em",
   "redirectRootNoLogin": "/main/all",
   "redirectRootLogin": "/main/friends",
@@ -10,5 +10,7 @@
   "showInstanceSpecificPanel": true,
   "scopeOptionsEnabled": true,
   "formattingOptionsEnabled": false,
-  "collapseMessageWithSubject": true
+  "collapseMessageWithSubject": true,
+  "hidePostStats": true,
+  "hideUserStats": true
 }
