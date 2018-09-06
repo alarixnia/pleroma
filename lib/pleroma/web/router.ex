@@ -93,6 +93,7 @@ defmodule Pleroma.Web.Router do
     get("/authorize", OAuthController, :authorize)
     post("/authorize", OAuthController, :create_authorization)
     post("/token", OAuthController, :token_exchange)
+    post("/revoke", OAuthController, :token_revoke)
   end
 
   scope "/api/v1", Pleroma.Web.MastodonAPI do
@@ -153,6 +154,12 @@ defmodule Pleroma.Web.Router do
     get("/domain_blocks", MastodonAPIController, :domain_blocks)
     post("/domain_blocks", MastodonAPIController, :block_domain)
     delete("/domain_blocks", MastodonAPIController, :unblock_domain)
+
+    get("/filters", MastodonAPIController, :get_filters)
+    post("/filters", MastodonAPIController, :create_filter)
+    get("/filters/:id", MastodonAPIController, :get_filter)
+    put("/filters/:id", MastodonAPIController, :update_filter)
+    delete("/filters/:id", MastodonAPIController, :delete_filter)
 
     get("/suggestions", MastodonAPIController, :suggestions)
   end
