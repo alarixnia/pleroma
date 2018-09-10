@@ -14,7 +14,9 @@ config :pleroma, Pleroma.Upload,
   uploader: Pleroma.Uploaders.Local,
   strip_exif: false
 
-config :pleroma, Pleroma.Uploaders.Local, uploads: "uploads"
+config :pleroma, Pleroma.Uploaders.Local,
+  uploads: "uploads",
+  uploads_url: "{{base_url}}/media/{{file}}"
 
 config :pleroma, Pleroma.Uploaders.S3,
   bucket: nil,
@@ -30,7 +32,8 @@ config :pleroma, Pleroma.Web.Endpoint,
   protocol: "https",
   secret_key_base: "aK4Abxf29xU9TTDKre9coZPUgevcVCFQJe/5xP/7Lt4BEif6idBIbjupVbOrbKxl",
   render_errors: [view: Pleroma.Web.ErrorView, accepts: ~w(json)],
-  pubsub: [name: Pleroma.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub: [name: Pleroma.PubSub, adapter: Phoenix.PubSub.PG2],
+  secure_cookie_flag: true
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -125,6 +128,7 @@ config :pleroma, :suggestions,
   third_party_engine:
     "http://vinayaka.distsn.org/cgi-bin/vinayaka-user-match-suggestions-api.cgi?{{host}}+{{user}}",
   timeout: 300_000,
+  limit: 23,
   web: "https://vinayaka.distsn.org/?{{host}}+{{user}}"
 
 # Import environment specific config. This must remain at the bottom
