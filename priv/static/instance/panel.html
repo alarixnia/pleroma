@@ -1,23 +1,37 @@
 <style>
-li.panel-entry {
-	display: inline;
-	font-size: 95%;
-	padding-right: 5px;
-	white-space: nowrap;
+.panel-about {
+	text-transform: lowercase;
+	margin-left: 12px;
+	margin-right: 12px;
 }
-li.panel-entry:before { content:"["; }
-li.panel-entry:after { content:"] "; }
+
+.panel-about ul {
+	list-style-type: none;
+	padding-left: 0;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.panel-about li {
+	display: inline-block;
+	padding-right: 5px;
+}
+
+.panel-about li:before { content: "["; }
+.panel-about li:after { content: "] "; }
 </style>
-<div style="text-transform:lowercase; margin-left:12px; margin-right:12px">
-<p><a href="/pleroma/">catgirl.science</a> is a general-purpose
+<div class="panel-about">
+<p><a href="/pleroma/">catgirl.science</a> is a
 <a href="https://pleroma.social" target="_blank">Pleroma</a> instance.</p>
-<ul style="padding-left:0; list-style-type:none">
-<li class="panel-entry"><a href="/main/public" title="Pleroma frontend" >Pleroma-FE</a></li>
-<li class="panel-entry"><a href="/web" title="Mastodon-style frontend">Mastodon-FE</a></li>
-<li class="panel-entry"><a href="/pleroma/apps.html" title="Mobile and desktop apps">Apps</a></li>
-<li class="panel-entry"><a href="https://emojos.in/catgirl.science" title="List of custom emojis and their shortcodes">Emojos</a></li>
-<li class="panel-entry"><a href="/pleroma/" title="About catgirl.science">About & Policies</a></li>
-<li class="panel-entry">Admin account: <a href="/users/announce">@announce</a></li>
+<ul>
+<li><a href="/pleroma/" title="About catgirl.science">About & Policies</a></li>
+<li>Admin account: <a href="/users/announce">@announce</a></li>
+</ul>
+<ul>
+<li><a href="/main/public" title="Pleroma frontend">Pleroma-FE</a></li>
+<li><a href="/web" title="Mastodon-style frontend">Mastodon-FE</a></li>
+<li><a href="/pleroma/apps.html" title="Mobile and desktop apps">Apps</a></li>
+<li><a href="https://emojos.in/catgirl.science" title="List of custom emojis and their shortcodes">Emojos</a></li>
 </ul>
 </div>
 
