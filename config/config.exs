@@ -76,6 +76,18 @@ config :pleroma, :instance,
   quarantined_instances: [],
   managed_config: true
 
+config :pleroma, :markup,
+  # XXX - unfortunately, inline images must be enabled by default right now, because
+  # of custom emoji.  Issue #275 discusses defanging that somehow.
+  allow_inline_images: true,
+  allow_headings: false,
+  allow_tables: false,
+  allow_fonts: false,
+  scrub_policy: [
+    Pleroma.HTML.Transform.MediaProxy,
+    Pleroma.HTML.Scrubber.Default
+  ]
+
 config :pleroma, :fe,
   theme: "pleroma-dark",
   logo: "/static/logo.png",
@@ -94,6 +106,8 @@ config :pleroma, :activitypub,
   outgoing_blocks: true
 
 config :pleroma, :user, deny_follow_blocked: true
+
+config :pleroma, :mrf_normalize_markup, scrub_policy: Pleroma.HTML.Scrubber.Default
 
 config :pleroma, :mrf_rejectnonpublic,
   allow_followersonly: false,
