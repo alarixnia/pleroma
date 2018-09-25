@@ -40,7 +40,7 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
     data = %{
       "created_at" => user.inserted_at |> Utils.format_naive_asctime(),
       "description" => HTML.strip_tags((user.bio || "") |> String.replace("<br>", "\n")),
-      "description_html" => HTML.filter_tags(user.bio),
+      "description_html" => HTML.filter_tags(user.bio, User.html_filter_policy(assigns[:for])),
       "favourites_count" => 0,
       "followers_count" => user_info[:follower_count],
       "following" => following,
@@ -64,7 +64,8 @@ defmodule Pleroma.Web.TwitterAPI.UserView do
       "background_image" => image_url(user.info["background"]) |> MediaProxy.url(),
       "is_local" => user.local,
       "locked" => !!user.info["locked"],
-      "default_scope" => user.info["default_scope"] || "public"
+      "default_scope" => user.info["default_scope"] || "public",
+      "no_rich_text" => user.info["no_rich_text"] || false
     }
 
     if assigns[:token] do

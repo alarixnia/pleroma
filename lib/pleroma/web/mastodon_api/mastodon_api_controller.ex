@@ -98,7 +98,7 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
         CommonAPI.update(user)
       end
 
-      json(conn, AccountView.render("account.json", %{user: user}))
+      json(conn, AccountView.render("account.json", %{user: user, for: user}))
     else
       _e ->
         conn
@@ -108,13 +108,13 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
   end
 
   def verify_credentials(%{assigns: %{user: user}} = conn, _) do
-    account = AccountView.render("account.json", %{user: user})
+    account = AccountView.render("account.json", %{user: user, for: user})
     json(conn, account)
   end
 
-  def user(conn, %{"id" => id}) do
+  def user(%{assigns: %{user: for_user}} = conn, %{"id" => id}) do
     with %User{} = user <- Repo.get(User, id) do
-      account = AccountView.render("account.json", %{user: user})
+      account = AccountView.render("account.json", %{user: user, for: for_user})
       json(conn, account)
     else
       _e ->
@@ -125,7 +125,7 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
   end
 
   @instance Application.get_env(:pleroma, :instance)
-  @mastodon_api_level "2.4.3"
+  @mastodon_api_level "2.5.0"
 
   def masto_instance(conn, _params) do
     response = %{
@@ -441,7 +441,7 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
       new_data = %{object.data | "name" => description}
 
       change = Object.change(object, %{data: new_data})
-      {:ok, media_obj} = Repo.update(change)
+      {:ok, _} = Repo.update(change)
 
       data =
         new_data
@@ -588,7 +588,7 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
     with %User{} = followed <- Repo.get_by(User, nickname: uri),
          {:ok, follower} <- User.maybe_direct_follow(follower, followed),
          {:ok, _activity} <- ActivityPub.follow(follower, followed) do
-      render(conn, AccountView, "account.json", %{user: followed})
+      render(conn, AccountView, "account.json", %{user: followed, for: follower})
     else
       {:error, message} ->
         conn
@@ -858,7 +858,9 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
 
     if user && token do
       mastodon_emoji = mastodonized_emoji()
-      accounts = Map.put(%{}, user.id, AccountView.render("account.json", %{user: user}))
+
+      accounts =
+        Map.put(%{}, user.id, AccountView.render("account.json", %{user: user, for: user}))
 
       initial_state =
         %{
@@ -1038,7 +1040,7 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
           id: id,
           type: "mention",
           created_at: created_at,
-          account: AccountView.render("account.json", %{user: actor}),
+          account: AccountView.render("account.json", %{user: actor, for: user}),
           status: StatusView.render("status.json", %{activity: activity, for: user})
         }
 
@@ -1049,7 +1051,7 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
           id: id,
           type: "favourite",
           created_at: created_at,
-          account: AccountView.render("account.json", %{user: actor}),
+          account: AccountView.render("account.json", %{user: actor, for: user}),
           status: StatusView.render("status.json", %{activity: liked_activity, for: user})
         }
 
@@ -1060,7 +1062,7 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
           id: id,
           type: "reblog",
           created_at: created_at,
-          account: AccountView.render("account.json", %{user: actor}),
+          account: AccountView.render("account.json", %{user: actor, for: user}),
           status: StatusView.render("status.json", %{activity: announced_activity, for: user})
         }
 
@@ -1069,7 +1071,7 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
           id: id,
           type: "follow",
           created_at: created_at,
-          account: AccountView.render("account.json", %{user: actor})
+          account: AccountView.render("account.json", %{user: actor, for: user})
         }
 
       _ ->
@@ -1077,7 +1079,7 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
     end
   end
 
-  def get_filters(%{assigns: %{user: user}} = conn, params) do
+  def get_filters(%{assigns: %{user: user}} = conn, _) do
     filters = Pleroma.Filter.get_filters(user)
     res = FilterView.render("filters.json", filters: filters)
     json(conn, res)
@@ -1101,7 +1103,7 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
     json(conn, res)
   end
 
-  def get_filter(%{assigns: %{user: user}} = conn, %{"id" => filter_id} = params) do
+  def get_filter(%{assigns: %{user: user}} = conn, %{"id" => filter_id}) do
     filter = Pleroma.Filter.get(filter_id, user)
     res = FilterView.render("filter.json", filter: filter)
     json(conn, res)
@@ -1126,13 +1128,13 @@ defmodule Pleroma.Web.MastodonAPI.MastodonAPIController do
     json(conn, res)
   end
 
-  def delete_filter(%{assigns: %{user: user}} = conn, %{"id" => filter_id} = params) do
+  def delete_filter(%{assigns: %{user: user}} = conn, %{"id" => filter_id}) do
     query = %Pleroma.Filter{
       user_id: user.id,
       filter_id: filter_id
     }
 
-    {:ok, response} = Pleroma.Filter.delete(query)
+    {:ok, _} = Pleroma.Filter.delete(query)
     json(conn, %{})
   end
 

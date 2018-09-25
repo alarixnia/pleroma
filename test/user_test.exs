@@ -166,6 +166,25 @@ defmodule Pleroma.UserTest do
       fetched_user = User.get_or_fetch_by_nickname("nonexistant")
       assert fetched_user == nil
     end
+
+    test "updates an existing user, if stale" do
+      a_week_ago = NaiveDateTime.add(NaiveDateTime.utc_now(), -604_800)
+
+      orig_user =
+        insert(
+          :user,
+          local: false,
+          nickname: "admin@mastodon.example.org",
+          ap_id: "http://mastodon.example.org/users/admin",
+          last_refreshed_at: a_week_ago
+        )
+
+      assert orig_user.last_refreshed_at == a_week_ago
+
+      user = User.get_or_fetch_by_ap_id("http://mastodon.example.org/users/admin")
+
+      refute user.last_refreshed_at == orig_user.last_refreshed_at
+    end
   end
 
   test "returns an ap_id for a user" do
@@ -506,5 +525,19 @@ defmodule Pleroma.UserTest do
     data = %{ap_id: user.ap_id <> "xxx", name: user.name, nickname: user.nickname}
 
     assert {:ok, %User{}} = User.insert_or_update_user(data)
+  end
+
+  describe "per-user rich-text filtering" do
+    test "html_filter_policy returns nil when rich-text is enabled" do
+      user = insert(:user)
+
+      assert nil == User.html_filter_policy(user)
+    end
+
+    test "html_filter_policy returns TwitterText scrubber when rich-text is disabled" do
+      user = insert(:user, %{info: %{"no_rich_text" => true}})
+
+      assert Pleroma.HTML.Scrubber.TwitterText == User.html_filter_policy(user)
+    end
   end
 end

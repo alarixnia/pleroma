@@ -12,16 +12,18 @@ defmodule Pleroma.HTML do
     |> get_scrubbers
   end
 
-  def filter_tags(html, scrubber) do
-    html |> Scrubber.scrub(scrubber)
-  end
-
-  def filter_tags(html) do
+  def filter_tags(html, nil) do
     get_scrubbers()
     |> Enum.reduce(html, fn scrubber, html ->
       filter_tags(html, scrubber)
     end)
   end
+
+  def filter_tags(html, scrubber) do
+    html |> Scrubber.scrub(scrubber)
+  end
+
+  def filter_tags(html), do: filter_tags(html, nil)
 
   def strip_tags(html) do
     html |> Scrubber.scrub(Scrubber.StripTags)
@@ -67,6 +69,8 @@ defmodule Pleroma.HTML.Scrubber.TwitterText do
       "alt"
     ])
   end
+
+  Meta.strip_everything_not_covered()
 end
 
 defmodule Pleroma.HTML.Scrubber.Default do
