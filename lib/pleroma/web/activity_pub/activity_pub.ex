@@ -683,7 +683,7 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
       (Pleroma.Web.Salmon.remote_users(activity) ++ followers)
       |> Enum.filter(fn user -> User.ap_enabled?(user) end)
       |> Enum.map(fn %{info: %{"source_data" => data}} ->
-        (data["endpoints"] && data["endpoints"]["sharedInbox"]) || data["inbox"]
+        (is_map(data["endpoints"]) && Map.get(data["endpoints"], "sharedInbox")) || data["inbox"]
       end)
       |> Enum.uniq()
       |> Enum.filter(fn inbox -> should_federate?(inbox, public) end)
@@ -756,6 +756,9 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
            {:ok, activity} <- Transmogrifier.handle_incoming(params) do
         {:ok, Object.normalize(activity.data["object"])}
       else
+        {:error, {:reject, nil}} ->
+          {:reject, nil}
+
         object = %Object{} ->
           {:ok, object}
 
