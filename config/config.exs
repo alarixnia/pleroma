@@ -74,7 +74,13 @@ config :pleroma, :instance,
   rewrite_policy: Pleroma.Web.ActivityPub.MRF.NoOpPolicy,
   public: true,
   quarantined_instances: [],
-  managed_config: true
+  managed_config: true,
+  allowed_post_formats: [
+    "text/plain",
+    "text/html",
+    "text/markdown"
+  ],
+  mrf_transparency: true
 
 config :pleroma, :markup,
   # XXX - unfortunately, inline images must be enabled by default right now, because
@@ -98,12 +104,14 @@ config :pleroma, :fe,
   redirect_root_login: "/main/friends",
   show_instance_panel: true,
   scope_options_enabled: false,
+  formatting_options_enabled: false,
   collapse_message_with_subject: false
 
 config :pleroma, :activitypub,
   accept_blocks: true,
   unfollow_blocked: true,
-  outgoing_blocks: true
+  outgoing_blocks: true,
+  follow_handshake_timeout: 500
 
 config :pleroma, :user, deny_follow_blocked: true
 

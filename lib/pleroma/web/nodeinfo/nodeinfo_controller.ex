@@ -4,6 +4,7 @@ defmodule Pleroma.Web.Nodeinfo.NodeinfoController do
   alias Pleroma.Stats
   alias Pleroma.Web
   alias Pleroma.{User, Repo}
+  alias Pleroma.Web.ActivityPub.MRF
 
   def schemas(conn, _params) do
     response = %{
@@ -27,10 +28,40 @@ defmodule Pleroma.Web.Nodeinfo.NodeinfoController do
     gopher = Application.get_env(:pleroma, :gopher)
     stats = Stats.get_stats()
 
+    mrf_simple =
+      Application.get_env(:pleroma, :mrf_simple)
+      |> Enum.into(%{})
+
+    mrf_policies =
+      MRF.get_policies()
+      |> Enum.map(fn policy -> to_string(policy) |> String.split(".") |> List.last() end)
+
+    quarantined = Keyword.get(instance, :quarantined_instances)
+
+    quarantined =
+      if is_list(quarantined) do
+        quarantined
+      else
+        []
+      end
+
     staff_accounts =
       User.moderator_user_query()
       |> Repo.all()
       |> Enum.map(fn u -> u.ap_id end)
+
+    mrf_transparency = Keyword.get(instance, :mrf_transparency)
+
+    federation_response =
+      if mrf_transparency do
+        %{
+          mrf_policies: mrf_policies,
+          mrf_simple: mrf_simple,
+          quarantined_instances: quarantined
+        }
+      else
+        %{}
+      end
 
     response = %{
       version: "2.0",
@@ -64,7 +95,9 @@ defmodule Pleroma.Web.Nodeinfo.NodeinfoController do
         },
         staffAccounts: staff_accounts,
         chat: Keyword.get(chat, :enabled),
-        gopher: Keyword.get(gopher, :enabled)
+        gopher: Keyword.get(gopher, :enabled),
+        federation: federation_response,
+        postFormats: Keyword.get(instance, :allowed_post_formats)
       }
     }
 
