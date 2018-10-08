@@ -9,7 +9,7 @@
   "chatDisabled": true,
   "showInstanceSpecificPanel": true,
   "scopeOptionsEnabled": true,
-  "formattingOptionsEnabled": true,
+  "formattingOptionsEnabled": false,
   "collapseMessageWithSubject": true,
   "hidePostStats": true,
   "hideUserStats": true
